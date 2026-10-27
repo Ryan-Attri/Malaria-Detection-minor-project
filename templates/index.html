@@ -101,14 +101,16 @@
   </header>
 
   <!-- ═══════════════════════════ MAIN ═══════════════════════════════ -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid lg:grid-cols-5 gap-8">
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
-    <!-- ────────── LEFT COLUMN: Upload & Result (3 cols) ────────── -->
-    <section class="lg:col-span-3 space-y-6">
+    <!-- ────────── 1. DIAGNOSTIC WORKSPACE ────────── -->
+    <section class="space-y-6">
 
-      <!-- Upload Card -->
-      <div class="rounded-2xl border border-slate-800 bg-slate-900/70 backdrop-blur p-6 shadow-xl">
-        <h2 class="text-lg font-bold mb-1 text-slate-100">Cell Image Upload</h2>
+      <!-- Upload & Diagnose Card -->
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/70 backdrop-blur p-6 sm:p-7 shadow-xl">
+        <h2 class="text-lg font-bold mb-1 text-slate-100 flex items-center gap-2">
+          <span>🔬</span> Cell Image Upload &amp; Diagnosis
+        </h2>
         <p class="text-xs text-slate-400 mb-5">Drag-and-drop or click to upload a Giemsa-stained thin blood smear microscopy image.</p>
 
         <!-- Drop Zone -->
@@ -148,30 +150,40 @@
 
     </section>
 
-    <!-- ────────── RIGHT COLUMN: Benchmark (2 cols) ─────────────── -->
-    <aside class="lg:col-span-2 space-y-6">
+    <!-- ────────── 2. 3-ARCHITECTURE BENCHMARK COMPARISON (BELOW DIAGNOSE) ────────── -->
+    <section class="rounded-2xl border border-slate-800 bg-slate-900/70 backdrop-blur p-6 sm:p-7 shadow-xl">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 pb-4 border-b border-slate-800/80">
+        <div>
+          <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+            <span>📊</span> 3-Architecture Benchmark Comparison
+          </h2>
+          <p class="text-xs text-slate-400 mt-1">NIH Malaria Dataset &mdash; 27,558 cell images &bull; 80/10/10 split &bull; 64&times;64 RGB</p>
+        </div>
+        <div class="flex items-center gap-2 text-xs text-slate-400">
+          <span class="inline-block w-2 h-2 rounded-full bg-cyan-400"></span>
+          <span>Benchmarked on identical test splits</span>
+        </div>
+      </div>
 
-      <!-- Benchmark Panel -->
-      <div class="rounded-2xl border border-slate-800 bg-slate-900/70 backdrop-blur p-6 shadow-xl">
-        <h2 class="text-lg font-bold mb-1 text-slate-100">3-Architecture Benchmark Comparison</h2>
-        <p class="text-xs text-slate-400 mb-5">NIH Malaria Dataset — 27,558 cell images &bull; 80/10/10 split &bull; 64×64 RGB</p>
+      <!-- 3 models arranged in a 3-column responsive grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
 
         <!-- 1 · MobileNetV2 -->
-        <div class="rounded-xl border border-cyan-500/30 bg-cyan-500/[0.06] p-4 mb-4">
-          <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-2">
+        <div class="rounded-xl border border-cyan-500/30 bg-cyan-500/[0.06] p-5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
               <span class="text-xs font-bold uppercase tracking-widest text-cyan-400">🏆 Deployed Winner</span>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-semibold">~2.2 M Params</span>
             </div>
-            <span class="text-xs px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-semibold">~2.2 M Params</span>
+            <h3 class="text-base font-bold text-slate-100">MobileNetV2 <span class="font-normal text-slate-400 text-xs block mt-0.5">(Transfer Learning)</span></h3>
+            <p class="text-xs text-slate-400 mt-2 mb-4 leading-relaxed">Depthwise Separable Convolutions &bull; ImageNet pretrained &bull; Fine-tuned</p>
           </div>
-          <h3 class="text-base font-bold text-slate-100">MobileNetV2 <span class="font-normal text-slate-400 text-sm">(Transfer Learning)</span></h3>
-          <p class="text-xs text-slate-400 mt-1 mb-3">Depthwise Separable Convolutions &bull; ImageNet pretrained &bull; Fine-tuned</p>
-          <div class="grid grid-cols-2 gap-3 text-center">
-            <div class="rounded-lg bg-slate-800/60 py-2">
+          <div class="grid grid-cols-2 gap-3 text-center pt-2 border-t border-cyan-500/20">
+            <div class="rounded-lg bg-slate-800/70 py-2.5">
               <p class="text-xl font-extrabold text-cyan-400">94.45 %</p>
               <p class="text-[10px] uppercase tracking-widest text-slate-500">Accuracy</p>
             </div>
-            <div class="rounded-lg bg-slate-800/60 py-2">
+            <div class="rounded-lg bg-slate-800/70 py-2.5">
               <p class="text-xl font-extrabold text-slate-300">0.2965</p>
               <p class="text-[10px] uppercase tracking-widest text-slate-500">Loss</p>
             </div>
@@ -179,19 +191,21 @@
         </div>
 
         <!-- 2 · ResNet50 -->
-        <div class="rounded-xl border border-violet-500/20 bg-violet-500/[0.04] p-4 mb-4">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-bold uppercase tracking-widest text-violet-400">Runner-Up</span>
-            <span class="text-xs px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300 font-semibold">~23.5 M Params</span>
+        <div class="rounded-xl border border-violet-500/20 bg-violet-500/[0.04] p-5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold uppercase tracking-widest text-violet-400">Runner-Up</span>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300 font-semibold">~23.5 M Params</span>
+            </div>
+            <h3 class="text-base font-bold text-slate-100">ResNet50 <span class="font-normal text-slate-400 text-xs block mt-0.5">(Residual Net TL)</span></h3>
+            <p class="text-xs text-slate-400 mt-2 mb-4 leading-relaxed">Skip Connections &bull; ImageNet pretrained &bull; Transfer Learning</p>
           </div>
-          <h3 class="text-base font-bold text-slate-100">ResNet50 <span class="font-normal text-slate-400 text-sm">(Residual Net TL)</span></h3>
-          <p class="text-xs text-slate-400 mt-1 mb-3">Skip Connections &bull; ImageNet pretrained &bull; Transfer Learning</p>
-          <div class="grid grid-cols-2 gap-3 text-center">
-            <div class="rounded-lg bg-slate-800/60 py-2">
+          <div class="grid grid-cols-2 gap-3 text-center pt-2 border-t border-violet-500/20">
+            <div class="rounded-lg bg-slate-800/70 py-2.5">
               <p class="text-xl font-extrabold text-violet-400">92.34 %</p>
               <p class="text-[10px] uppercase tracking-widest text-slate-500">Accuracy</p>
             </div>
-            <div class="rounded-lg bg-slate-800/60 py-2">
+            <div class="rounded-lg bg-slate-800/70 py-2.5">
               <p class="text-xl font-extrabold text-slate-300">0.2560</p>
               <p class="text-[10px] uppercase tracking-widest text-slate-500">Loss</p>
             </div>
@@ -199,46 +213,42 @@
         </div>
 
         <!-- 3 · LeNet-5 -->
-        <div class="rounded-xl border border-slate-700/60 bg-slate-800/30 p-4 mb-4">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-bold uppercase tracking-widest text-slate-500">Baseline CNN</span>
-            <span class="text-xs px-2 py-0.5 rounded-full bg-slate-700/40 text-slate-400 font-semibold">~1.1 M Params</span>
+        <div class="rounded-xl border border-slate-700/60 bg-slate-800/30 p-5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold uppercase tracking-widest text-slate-500">Baseline CNN</span>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-slate-700/40 text-slate-400 font-semibold">~1.1 M Params</span>
+            </div>
+            <h3 class="text-base font-bold text-slate-100">LeNet-5 <span class="font-normal text-slate-400 text-xs block mt-0.5">(Custom Baseline)</span></h3>
+            <p class="text-xs text-slate-400 mt-2 mb-4 leading-relaxed">2-Conv Sequential CNN &bull; Trained from scratch</p>
           </div>
-          <h3 class="text-base font-bold text-slate-100">LeNet-5 <span class="font-normal text-slate-400 text-sm">(Custom Baseline)</span></h3>
-          <p class="text-xs text-slate-400 mt-1 mb-3">2-Conv Sequential CNN &bull; Trained from scratch</p>
-          <div class="grid grid-cols-2 gap-3 text-center">
-            <div class="rounded-lg bg-slate-800/60 py-2">
+          <div class="grid grid-cols-2 gap-3 text-center pt-2 border-t border-slate-700/40">
+            <div class="rounded-lg bg-slate-800/70 py-2.5">
               <p class="text-xl font-extrabold text-slate-400">82.95 %</p>
               <p class="text-[10px] uppercase tracking-widest text-slate-500">Accuracy</p>
             </div>
-            <div class="rounded-lg bg-slate-800/60 py-2">
+            <div class="rounded-lg bg-slate-800/70 py-2.5">
               <p class="text-xl font-extrabold text-slate-300">0.3704</p>
               <p class="text-[10px] uppercase tracking-widest text-slate-500">Loss</p>
             </div>
           </div>
         </div>
 
-        <!-- Comparison Chart Image -->
-        <div class="rounded-xl border border-slate-700/50 overflow-hidden mt-2">
-          <p class="text-[10px] uppercase tracking-widest text-slate-500 px-3 pt-3 pb-1">Training / Validation Curves</p>
-          <img src="/static/architecture_comparison_3models.png"
-               alt="Accuracy and loss comparison chart for LeNet-5, ResNet50, and MobileNetV2"
-               class="w-full" loading="lazy" />
-        </div>
       </div>
+    </section>
 
-      <!-- Tech Stack -->
-      <div class="rounded-2xl border border-slate-800 bg-slate-900/70 backdrop-blur p-5 shadow-xl">
-        <h3 class="text-sm font-bold text-slate-300 mb-3">Technology Stack</h3>
-        <div class="flex flex-wrap gap-2 text-[11px] font-semibold">
-          <span class="px-2.5 py-1 rounded-lg bg-orange-500/10 text-orange-400 border border-orange-500/20">TensorFlow / Keras</span>
-          <span class="px-2.5 py-1 rounded-lg bg-green-500/10 text-green-400 border border-green-500/20">Flask</span>
-          <span class="px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">Tailwind CSS</span>
-          <span class="px-2.5 py-1 rounded-lg bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">Python 3</span>
-          <span class="px-2.5 py-1 rounded-lg bg-pink-500/10 text-pink-400 border border-pink-500/20">PIL / NumPy</span>
-        </div>
+    <!-- ────────── 3. TECHNOLOGY STACK ────────── -->
+    <section class="rounded-2xl border border-slate-800 bg-slate-900/70 backdrop-blur p-5 shadow-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Technology Stack</h3>
+      <div class="flex flex-wrap gap-2 text-[11px] font-semibold">
+        <span class="px-2.5 py-1 rounded-lg bg-orange-500/10 text-orange-400 border border-orange-500/20">TensorFlow / Keras</span>
+        <span class="px-2.5 py-1 rounded-lg bg-green-500/10 text-green-400 border border-green-500/20">Flask</span>
+        <span class="px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">Tailwind CSS</span>
+        <span class="px-2.5 py-1 rounded-lg bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">Python 3</span>
+        <span class="px-2.5 py-1 rounded-lg bg-pink-500/10 text-pink-400 border border-pink-500/20">PIL / NumPy</span>
       </div>
-    </aside>
+    </section>
+
   </main>
 
   <!-- ═══════════════════════════ FOOTER ═════════════════════════════ -->

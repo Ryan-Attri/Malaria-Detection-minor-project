@@ -1,0 +1,27 @@
+# ── Python ───────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# ── Virtual Environments ────────────────
+venv/
+.venv/
+env/
+
+# ── Environment Variables ────────────────
+.env
+
+# ── OS / Editor ──────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ── Duplicate model files (keep clean name) ─
+*\ (1).h5
+*\ (2).h5
+
+# ── Archives (regeneratable) ────────────
+*.zip

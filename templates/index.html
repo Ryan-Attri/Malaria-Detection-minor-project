@@ -1,235 +1,242 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MalariaAI Diagnostic Portal — MobileNetV2</title>
-  <meta name="description" content="AI-powered malaria detection from blood cell microscopy using MobileNetV2 deep learning. B.Tech CSE Minor Project." />
+  <title>MalariaAI &mdash; Clinical Cell Microscopy Classifier</title>
+  <meta name="description" content="Minimalist deep-learning diagnostic portal for Giemsa-stained blood cell microscopy. MobileNetV2 architecture." />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Geist', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['"Geist Mono"', 'ui-monospace', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
   <style>
-    *, *::before, *::after { font-family: 'Inter', system-ui, sans-serif; }
-
-    /* ── Animated gradient ring for header ─────────────────────── */
-    @keyframes gradient-rotate {
-      0%   { background-position: 0% 50%; }
-      50%  { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-    .anim-gradient {
-      background: linear-gradient(135deg, #06b6d4, #8b5cf6, #ec4899, #06b6d4);
-      background-size: 300% 300%;
-      animation: gradient-rotate 6s ease infinite;
+    body {
+      background-color: #09090b;
+      color: #fafafa;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     }
 
-    /* ── Drop zone transitions ────────────────────────────────── */
     .drop-zone {
-      transition: border-color 0.25s, background-color 0.25s, box-shadow 0.25s;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
     }
     .drop-zone.dragover {
-      border-color: #06b6d4 !important;
-      background-color: rgba(6, 182, 212, 0.08) !important;
-      box-shadow: 0 0 30px rgba(6, 182, 212, 0.15);
+      border-color: #71717a !important;
+      background-color: rgba(39, 39, 42, 0.4) !important;
     }
 
-    /* ── Pulse keyframes for result card ──────────────────────── */
-    @keyframes pulse-glow-red {
-      0%, 100% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.25); }
-      50%      { box-shadow: 0 0 30px rgba(239, 68, 68, 0.45); }
+    .bar-fill {
+      transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    @keyframes pulse-glow-green {
-      0%, 100% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.25); }
-      50%      { box-shadow: 0 0 30px rgba(16, 185, 129, 0.45); }
-    }
-    .glow-red   { animation: pulse-glow-red   2s ease-in-out infinite; }
-    .glow-green { animation: pulse-glow-green  2s ease-in-out infinite; }
 
-    /* ── Progress bar fill ────────────────────────────────────── */
-    .conf-bar-inner { transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
-
-    /* ── Smooth card entrance ─────────────────────────────────── */
-    @keyframes slide-up {
-      from { opacity: 0; transform: translateY(18px); }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    .slide-up { animation: slide-up 0.45s ease-out forwards; }
-
-    /* ── Spinner ──────────────────────────────────────────────── */
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .spinner {
-      width: 22px; height: 22px;
-      border: 3px solid rgba(255,255,255,0.2);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      display: inline-block;
-      vertical-align: middle;
+    .animate-in {
+      animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
   </style>
 </head>
 
-<body class="bg-slate-950 text-slate-100 min-h-screen antialiased">
+<body class="min-h-screen antialiased selection:bg-zinc-800 selection:text-white flex flex-col justify-between">
 
-  <!-- ═══════════════════════════ HEADER ══════════════════════════════ -->
-  <header class="relative overflow-hidden">
-    <div class="anim-gradient absolute inset-0 opacity-[0.07]"></div>
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 flex flex-col sm:flex-row items-center justify-between gap-4">
+  <!-- ═══════════════════════════ NAVIGATION ══════════════════════════════ -->
+  <header class="border-b border-zinc-900 bg-zinc-950/80 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <!-- Microscope icon -->
-        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan-500 to-violet-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-          <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3v2.25M14.25 3v2.25M12 21a9 9 0 100-18 9 9 0 000 18zm0-6a3 3 0 100-6 3 3 0 000 6z"/>
-          </svg>
-        </div>
-        <div>
-          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-400 via-violet-400 to-pink-400 bg-clip-text text-transparent">
-            MalariaAI Diagnostic Portal
-          </h1>
-          <p class="text-xs text-slate-400 mt-0.5">Deep-Learning Blood-Cell Analysis &bull; B.Tech CSE Minor Project</p>
-        </div>
-      </div>
-      <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs font-semibold tracking-wide">
-        <span class="relative flex h-2.5 w-2.5">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+        <div class="h-2 w-2 rounded-full bg-emerald-500"></div>
+        <span class="font-semibold text-sm tracking-tight text-zinc-100">MalariaAI</span>
+        <span class="text-zinc-600">/</span>
+        <span class="text-xs text-zinc-400 font-mono">MobileNetV2</span>
+        <span class="hidden md:inline-flex text-[11px] px-2 py-0.5 rounded border border-zinc-800 text-zinc-400 font-mono">
+          B.Tech CSE Minor Project
         </span>
-        Active Model: MobileNetV2 (94.45 % Test Acc)
-      </span>
+      </div>
+
+      <div class="flex items-center gap-4 text-xs font-mono">
+        <span class="hidden sm:inline text-zinc-500">NIH NLM Dataset (27,558 cells)</span>
+        <span class="px-2 py-1 rounded border border-zinc-800 bg-zinc-900/60 text-zinc-300">
+          94.45% Test Acc
+        </span>
+      </div>
     </div>
-    <div class="h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent"></div>
   </header>
 
-  <!-- ═══════════════════════════ MAIN ═══════════════════════════════ -->
-  <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+  <!-- ═══════════════════════════ MAIN CONTENT ════════════════════════════ -->
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full space-y-8">
 
-    <!-- ────────── 1. DIAGNOSTIC WORKSPACE ────────── -->
-    <section class="space-y-6">
+    <!-- ────────── DIAGNOSTIC WORKBENCH ────────── -->
+    <section class="border border-zinc-800/80 rounded-xl bg-zinc-950 p-6 sm:p-7 space-y-6">
 
-      <!-- Upload & Diagnose Card -->
-      <div class="rounded-2xl border border-slate-800 bg-slate-900/70 backdrop-blur p-6 sm:p-7 shadow-xl">
-        <h2 class="text-lg font-bold mb-1 text-slate-100 flex items-center gap-2">
-          <span>🔬</span> Cell Image Upload &amp; Diagnosis
-        </h2>
-        <p class="text-xs text-slate-400 mb-5">Drag-and-drop or click to upload a Giemsa-stained thin blood smear microscopy image.</p>
-
-        <!-- Drop Zone -->
-        <div id="dropZone"
-             class="drop-zone group relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-700 bg-slate-800/40 hover:border-cyan-500/60 hover:bg-cyan-500/[0.04] cursor-pointer min-h-[260px] transition-all"
-             onclick="document.getElementById('fileInput').click()">
-          <!-- Placeholder content (hidden when preview visible) -->
-          <div id="placeholder" class="flex flex-col items-center text-center px-4">
-            <svg class="w-12 h-12 mb-3 text-slate-600 group-hover:text-cyan-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
-            </svg>
-            <p class="text-sm text-slate-400">Drop cell image here or <span class="text-cyan-400 font-semibold">browse</span></p>
-            <p class="text-xs text-slate-500 mt-1">PNG, JPG, BMP — single-cell crop preferred</p>
-          </div>
-          <!-- Image preview -->
-          <img id="preview" class="hidden max-h-56 rounded-lg shadow-lg ring-1 ring-white/10" alt="Cell preview" />
+      <!-- Workbench Header & Quick Samples -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-zinc-900">
+        <div>
+          <h1 class="text-base font-semibold text-zinc-100 tracking-tight">Microscopy Diagnostic Workbench</h1>
+          <p class="text-xs text-zinc-400 mt-0.5">Upload a Giemsa-stained thin blood smear cell image for real-time MobileNetV2 inference.</p>
         </div>
-        <input type="file" id="fileInput" accept="image/*" class="hidden" />
 
-        <!-- Action button -->
+        <!-- Quick-load sample buttons -->
+        <div class="flex items-center gap-2">
+          <span class="text-[11px] font-mono text-zinc-500 hidden sm:inline">Samples:</span>
+          <button type="button"
+                  onclick="loadSample('parasitized_cell_1.png')"
+                  class="px-2.5 py-1 text-xs font-mono rounded border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors">
+            + Parasitized
+          </button>
+          <button type="button"
+                  onclick="loadSample('uninfected_cell_1.png')"
+                  class="px-2.5 py-1 text-xs font-mono rounded border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors">
+            + Uninfected
+          </button>
+        </div>
+      </div>
+
+      <!-- Dropzone -->
+      <div id="dropZone"
+           class="drop-zone relative border border-dashed border-zinc-800 hover:border-zinc-700 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer min-h-[220px] bg-zinc-900/20"
+           onclick="document.getElementById('fileInput').click()">
+
+        <!-- Default Empty State -->
+        <div id="placeholder" class="flex flex-col items-center text-center space-y-2">
+          <div class="w-9 h-9 rounded-full border border-zinc-800 flex items-center justify-center text-zinc-400">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+            </svg>
+          </div>
+          <p class="text-xs text-zinc-300 font-medium">Click to upload or drag microscopy image here</p>
+          <p class="text-[11px] font-mono text-zinc-500">Input tensor resizes to 64 &times; 64 RGB &bull; PNG / JPG</p>
+        </div>
+
+        <!-- Preview State (hidden by default) -->
+        <div id="previewContainer" class="hidden flex flex-col items-center space-y-3">
+          <div class="p-1 border border-zinc-800 rounded bg-zinc-900">
+            <img id="preview" class="max-h-40 rounded object-contain" alt="Cell preview" />
+          </div>
+          <p id="fileName" class="text-xs font-mono text-zinc-400"></p>
+        </div>
+
+        <input type="file" id="fileInput" accept="image/*" class="hidden" />
+      </div>
+
+      <!-- Submit / Trigger -->
+      <div class="flex items-center justify-between gap-4 pt-1">
+        <p class="text-xs text-zinc-500 font-mono hidden sm:block">Classification threshold: 0.5000 (TFDS Malaria)</p>
         <button id="runBtn" disabled
-                class="mt-5 w-full py-3.5 rounded-xl font-bold text-sm tracking-wide
-                       bg-gradient-to-r from-cyan-600 to-violet-600 text-white
-                       shadow-lg shadow-cyan-500/20
-                       hover:shadow-cyan-500/30 hover:brightness-110
-                       disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:brightness-100
+                class="w-full sm:w-auto px-5 py-2.5 rounded-lg text-xs font-medium tracking-wide
+                       bg-zinc-100 hover:bg-white text-zinc-900 disabled:opacity-30 disabled:cursor-not-allowed
                        transition-all flex items-center justify-center gap-2">
-          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9"/>
+          <span>Run Diagnostic Inference</span>
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
           </svg>
-          Run MobileNetV2 Diagnostic Inference
         </button>
       </div>
 
-      <!-- Result Card (hidden until prediction) -->
-      <div id="resultCard" class="hidden slide-up rounded-2xl border p-6 shadow-xl backdrop-blur"></div>
+      <!-- Result Section (populated upon inference) -->
+      <div id="resultCard" class="hidden animate-in pt-4 border-t border-zinc-900"></div>
 
     </section>
 
-    <!-- ────────── 2. 3-ARCHITECTURE BENCHMARK COMPARISON (BELOW DIAGNOSE) ────────── -->
-    <section class="rounded-2xl border border-slate-800 bg-slate-900/70 backdrop-blur p-6 sm:p-7 shadow-xl">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 pb-4 border-b border-slate-800/80">
+    <!-- ────────── 3-ARCHITECTURE BENCHMARK COMPARISON ────────── -->
+    <section class="border border-zinc-800/80 rounded-xl bg-zinc-950 p-6 sm:p-7 space-y-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-zinc-900">
         <div>
-          <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
-            <span>📊</span> 3-Architecture Benchmark Comparison
-          </h2>
-          <p class="text-xs text-slate-400 mt-1">NIH Malaria Dataset &mdash; 27,558 cell images &bull; 80/10/10 split &bull; 64&times;64 RGB</p>
+          <h2 class="text-base font-semibold text-zinc-100 tracking-tight">3-Architecture Benchmark Comparison</h2>
+          <p class="text-xs text-zinc-400 mt-0.5">NIH NLM Malaria Dataset &mdash; 27,558 cell images &bull; 80 / 10 / 10 split &bull; 64 &times; 64 RGB</p>
         </div>
-        <div class="flex items-center gap-2 text-xs text-slate-400">
-          <span class="inline-block w-2 h-2 rounded-full bg-cyan-400"></span>
-          <span>Benchmarked on identical test splits</span>
-        </div>
+        <span class="text-xs font-mono text-zinc-500">Evaluated on 2,756 test cells</span>
       </div>
 
-      <!-- 3 models arranged in a 3-column responsive grid -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <!-- 3 Models Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-        <!-- 1 · MobileNetV2 -->
-        <div class="rounded-xl border border-cyan-500/30 bg-cyan-500/[0.06] p-5 flex flex-col justify-between">
+        <!-- 1 · MobileNetV2 (Deployed) -->
+        <div class="border border-zinc-700/80 rounded-lg p-5 bg-zinc-900/30 flex flex-col justify-between space-y-4">
           <div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-bold uppercase tracking-widest text-cyan-400">🏆 Deployed Winner</span>
-              <span class="text-xs px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-semibold">~2.2 M Params</span>
+            <div class="flex items-center justify-between text-[11px] font-mono text-emerald-400 mb-2">
+              <span class="flex items-center gap-1.5">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                DEPLOYED WINNER
+              </span>
+              <span class="text-zinc-500">~2.2M params</span>
             </div>
-            <h3 class="text-base font-bold text-slate-100">MobileNetV2 <span class="font-normal text-slate-400 text-xs block mt-0.5">(Transfer Learning)</span></h3>
-            <p class="text-xs text-slate-400 mt-2 mb-4 leading-relaxed">Depthwise Separable Convolutions &bull; ImageNet pretrained &bull; Fine-tuned</p>
+            <h3 class="text-sm font-semibold text-zinc-100 tracking-tight">MobileNetV2</h3>
+            <p class="text-xs text-zinc-400 mt-1 leading-relaxed">
+              Depthwise Separable Convolutions. Pretrained on ImageNet &amp; fine-tuned for high accuracy with minimal parameter footprint.
+            </p>
           </div>
-          <div class="grid grid-cols-2 gap-3 text-center pt-2 border-t border-cyan-500/20">
-            <div class="rounded-lg bg-slate-800/70 py-2.5">
-              <p class="text-xl font-extrabold text-cyan-400">94.45 %</p>
-              <p class="text-[10px] uppercase tracking-widest text-slate-500">Accuracy</p>
+
+          <div class="grid grid-cols-2 gap-2 pt-3 border-t border-zinc-800/80 font-mono">
+            <div>
+              <span class="text-[10px] uppercase text-zinc-500 tracking-wider">Test Acc</span>
+              <p class="text-lg font-semibold text-emerald-400">94.45%</p>
             </div>
-            <div class="rounded-lg bg-slate-800/70 py-2.5">
-              <p class="text-xl font-extrabold text-slate-300">0.2965</p>
-              <p class="text-[10px] uppercase tracking-widest text-slate-500">Loss</p>
+            <div>
+              <span class="text-[10px] uppercase text-zinc-500 tracking-wider">Loss</span>
+              <p class="text-lg font-semibold text-zinc-300">0.2965</p>
             </div>
           </div>
         </div>
 
         <!-- 2 · ResNet50 -->
-        <div class="rounded-xl border border-violet-500/20 bg-violet-500/[0.04] p-5 flex flex-col justify-between">
+        <div class="border border-zinc-800/80 rounded-lg p-5 bg-zinc-900/10 flex flex-col justify-between space-y-4">
           <div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-bold uppercase tracking-widest text-violet-400">Runner-Up</span>
-              <span class="text-xs px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300 font-semibold">~23.5 M Params</span>
+            <div class="flex items-center justify-between text-[11px] font-mono text-zinc-400 mb-2">
+              <span>RUNNER-UP</span>
+              <span class="text-zinc-500">~23.5M params</span>
             </div>
-            <h3 class="text-base font-bold text-slate-100">ResNet50 <span class="font-normal text-slate-400 text-xs block mt-0.5">(Residual Net TL)</span></h3>
-            <p class="text-xs text-slate-400 mt-2 mb-4 leading-relaxed">Skip Connections &bull; ImageNet pretrained &bull; Transfer Learning</p>
+            <h3 class="text-sm font-semibold text-zinc-100 tracking-tight">ResNet50</h3>
+            <p class="text-xs text-zinc-400 mt-1 leading-relaxed">
+              Deep residual network with bottleneck skip connections. Strong representation power at the cost of higher memory and compute.
+            </p>
           </div>
-          <div class="grid grid-cols-2 gap-3 text-center pt-2 border-t border-violet-500/20">
-            <div class="rounded-lg bg-slate-800/70 py-2.5">
-              <p class="text-xl font-extrabold text-violet-400">92.34 %</p>
-              <p class="text-[10px] uppercase tracking-widest text-slate-500">Accuracy</p>
+
+          <div class="grid grid-cols-2 gap-2 pt-3 border-t border-zinc-800/80 font-mono">
+            <div>
+              <span class="text-[10px] uppercase text-zinc-500 tracking-wider">Test Acc</span>
+              <p class="text-lg font-semibold text-zinc-300">92.34%</p>
             </div>
-            <div class="rounded-lg bg-slate-800/70 py-2.5">
-              <p class="text-xl font-extrabold text-slate-300">0.2560</p>
-              <p class="text-[10px] uppercase tracking-widest text-slate-500">Loss</p>
+            <div>
+              <span class="text-[10px] uppercase text-zinc-500 tracking-wider">Loss</span>
+              <p class="text-lg font-semibold text-zinc-300">0.2560</p>
             </div>
           </div>
         </div>
 
         <!-- 3 · LeNet-5 -->
-        <div class="rounded-xl border border-slate-700/60 bg-slate-800/30 p-5 flex flex-col justify-between">
+        <div class="border border-zinc-800/80 rounded-lg p-5 bg-zinc-900/10 flex flex-col justify-between space-y-4">
           <div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-bold uppercase tracking-widest text-slate-500">Baseline CNN</span>
-              <span class="text-xs px-2 py-0.5 rounded-full bg-slate-700/40 text-slate-400 font-semibold">~1.1 M Params</span>
+            <div class="flex items-center justify-between text-[11px] font-mono text-zinc-500 mb-2">
+              <span>BASELINE CNN</span>
+              <span class="text-zinc-500">~1.1M params</span>
             </div>
-            <h3 class="text-base font-bold text-slate-100">LeNet-5 <span class="font-normal text-slate-400 text-xs block mt-0.5">(Custom Baseline)</span></h3>
-            <p class="text-xs text-slate-400 mt-2 mb-4 leading-relaxed">2-Conv Sequential CNN &bull; Trained from scratch</p>
+            <h3 class="text-sm font-semibold text-zinc-100 tracking-tight">LeNet-5</h3>
+            <p class="text-xs text-zinc-400 mt-1 leading-relaxed">
+              Custom 2-stage convolutional baseline trained from scratch without transfer learning. Demonstrates classic CNN performance.
+            </p>
           </div>
-          <div class="grid grid-cols-2 gap-3 text-center pt-2 border-t border-slate-700/40">
-            <div class="rounded-lg bg-slate-800/70 py-2.5">
-              <p class="text-xl font-extrabold text-slate-400">82.95 %</p>
-              <p class="text-[10px] uppercase tracking-widest text-slate-500">Accuracy</p>
+
+          <div class="grid grid-cols-2 gap-2 pt-3 border-t border-zinc-800/80 font-mono">
+            <div>
+              <span class="text-[10px] uppercase text-zinc-500 tracking-wider">Test Acc</span>
+              <p class="text-lg font-semibold text-zinc-400">82.95%</p>
             </div>
-            <div class="rounded-lg bg-slate-800/70 py-2.5">
-              <p class="text-xl font-extrabold text-slate-300">0.3704</p>
-              <p class="text-[10px] uppercase tracking-widest text-slate-500">Loss</p>
+            <div>
+              <span class="text-[10px] uppercase text-zinc-500 tracking-wider">Loss</span>
+              <p class="text-lg font-semibold text-zinc-400">0.3704</p>
             </div>
           </div>
         </div>
@@ -237,37 +244,44 @@
       </div>
     </section>
 
-    <!-- ────────── 3. TECHNOLOGY STACK ────────── -->
-    <section class="rounded-2xl border border-slate-800 bg-slate-900/70 backdrop-blur p-5 shadow-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Technology Stack</h3>
-      <div class="flex flex-wrap gap-2 text-[11px] font-semibold">
-        <span class="px-2.5 py-1 rounded-lg bg-orange-500/10 text-orange-400 border border-orange-500/20">TensorFlow / Keras</span>
-        <span class="px-2.5 py-1 rounded-lg bg-green-500/10 text-green-400 border border-green-500/20">Flask</span>
-        <span class="px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">Tailwind CSS</span>
-        <span class="px-2.5 py-1 rounded-lg bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">Python 3</span>
-        <span class="px-2.5 py-1 rounded-lg bg-pink-500/10 text-pink-400 border border-pink-500/20">PIL / NumPy</span>
+    <!-- ────────── SYSTEM / TECH STACK METADATA ────────── -->
+    <section class="border border-zinc-900 rounded-lg p-4 bg-zinc-950 text-xs font-mono text-zinc-500 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <span class="h-1.5 w-1.5 rounded-full bg-zinc-600"></span>
+        <span>Pipeline: PIL RGB &rarr; Resize (64, 64) &rarr; Scale [0, 1] &rarr; MobileNetV2 Sigmoid</span>
+      </div>
+      <div class="flex items-center gap-3 text-zinc-400">
+        <span>TensorFlow</span>
+        <span>&bull;</span>
+        <span>Flask</span>
+        <span>&bull;</span>
+        <span>NumPy</span>
+        <span>&bull;</span>
+        <span>Pillow</span>
       </div>
     </section>
 
   </main>
 
-  <!-- ═══════════════════════════ FOOTER ═════════════════════════════ -->
-  <footer class="border-t border-slate-800 mt-6">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
-      <p>&copy; 2026 MalariaAI &mdash; B.Tech CSE Minor Project</p>
-      <p>Model: MobileNetV2 &bull; Dataset: NIH NLM Malaria (27,558 cells)</p>
+  <!-- ═══════════════════════════ FOOTER ═══════════════════════════════ -->
+  <footer class="border-t border-zinc-900 py-6 text-xs text-zinc-600 font-mono">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <p>&copy; 2026 MalariaAI &bull; B.Tech CSE Minor Project</p>
+      <p>Dataset: National Library of Medicine (NIH) Malaria Image Database</p>
     </div>
   </footer>
 
-  <!-- ═══════════════════════════ JS ═════════════════════════════════ -->
+  <!-- ═══════════════════════════ SCRIPT ═══════════════════════════════ -->
   <script>
-    const dropZone    = document.getElementById('dropZone');
-    const fileInput   = document.getElementById('fileInput');
-    const preview     = document.getElementById('preview');
-    const placeholder = document.getElementById('placeholder');
-    const runBtn      = document.getElementById('runBtn');
-    const resultCard  = document.getElementById('resultCard');
-    let selectedFile  = null;
+    const dropZone           = document.getElementById('dropZone');
+    const fileInput          = document.getElementById('fileInput');
+    const preview            = document.getElementById('preview');
+    const previewContainer   = document.getElementById('previewContainer');
+    const placeholder        = document.getElementById('placeholder');
+    const fileName           = document.getElementById('fileName');
+    const runBtn             = document.getElementById('runBtn');
+    const resultCard         = document.getElementById('resultCard');
+    let selectedFile         = null;
 
     /* ── Drag & Drop ────────────────────────────────────────────── */
     ['dragenter', 'dragover'].forEach(e =>
@@ -281,17 +295,17 @@
       if (file) handleFile(file);
     });
 
-    /* ── File Input Change ──────────────────────────────────────── */
     fileInput.addEventListener('change', () => {
       if (fileInput.files[0]) handleFile(fileInput.files[0]);
     });
 
     function handleFile(file) {
       selectedFile = file;
+      fileName.textContent = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
       const reader = new FileReader();
       reader.onload = e => {
         preview.src = e.target.result;
-        preview.classList.remove('hidden');
+        previewContainer.classList.remove('hidden');
         placeholder.classList.add('hidden');
         runBtn.disabled = false;
         resultCard.classList.add('hidden');
@@ -299,19 +313,40 @@
       reader.readAsDataURL(file);
     }
 
-    /* ── Inference Request ──────────────────────────────────────── */
-    runBtn.addEventListener('click', async () => {
+    /* ── Quick Sample Loader ────────────────────────────────────── */
+    async function loadSample(name) {
+      try {
+        const res = await fetch('/static/samples/' + name);
+        if (!res.ok) throw new Error('Failed to load sample image');
+        const blob = await res.blob();
+        const file = new File([blob], name, { type: 'image/png' });
+        handleFile(file);
+        // Automatically trigger inference
+        executeInference();
+      } catch (err) {
+        showError(err.message);
+      }
+    }
+
+    /* ── Inference Execution ────────────────────────────────────── */
+    runBtn.addEventListener('click', executeInference);
+
+    async function executeInference() {
       if (!selectedFile) return;
       runBtn.disabled = true;
-      runBtn.innerHTML = '<span class="spinner"></span> Running Inference…';
+      runBtn.innerHTML = `
+        <svg class="animate-spin h-3.5 w-3.5 text-zinc-900" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+        </svg>
+        <span>Computing...</span>`;
 
       const formData = new FormData();
       formData.append('file', selectedFile);
 
       try {
-        const res  = await fetch('/predict', { method: 'POST', body: formData });
+        const res = await fetch('/predict', { method: 'POST', body: formData });
         const data = await res.json();
-
         if (data.error) {
           showError(data.error);
         } else {
@@ -322,72 +357,82 @@
       } finally {
         runBtn.disabled = false;
         runBtn.innerHTML = `
-          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9"/>
-          </svg>
-          Run MobileNetV2 Diagnostic Inference`;
+          <span>Run Diagnostic Inference</span>
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+          </svg>`;
       }
-    });
+    }
 
-    /* ── Render Result Card ─────────────────────────────────────── */
+    /* ── Render Clinical Telemetry Result ───────────────────────── */
     function showResult(d) {
-      const parasitized = d.is_parasitized;
-      const accent      = parasitized ? 'red'     : 'emerald';
-      const icon        = parasitized
-        ? `<svg class="w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>`
-        : `<svg class="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+      const isParasitized = d.is_parasitized;
+      const statusColor   = isParasitized ? 'text-rose-400' : 'text-emerald-400';
+      const statusBadge   = isParasitized
+        ? 'border-rose-500/20 bg-rose-500/10 text-rose-400'
+        : 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400';
+      const statusTag     = isParasitized ? 'CRITICAL FINDING · PARASITIZED' : 'NORMAL FINDING · UNINFECTED';
+      const barColor      = isParasitized ? 'bg-rose-500' : 'bg-emerald-500';
 
-      const barColor  = parasitized ? 'bg-red-500' : 'bg-emerald-500';
-      const glowClass = parasitized ? 'glow-red'   : 'glow-green';
-      const borderClr = parasitized ? 'border-red-500/40'   : 'border-emerald-500/40';
-      const bgClr     = parasitized ? 'bg-red-500/[0.06]'   : 'bg-emerald-500/[0.06]';
-
-      resultCard.className = `slide-up rounded-2xl border ${borderClr} ${bgClr} ${glowClass} p-6 shadow-xl backdrop-blur`;
       resultCard.innerHTML = `
-        <div class="flex items-center gap-3 mb-4">
-          ${icon}
-          <div>
-            <p class="text-xl font-extrabold tracking-tight ${parasitized ? 'text-red-400' : 'text-emerald-400'}">${d.prediction}</p>
-            <p class="text-xs text-slate-400 mt-0.5">MobileNetV2 Inference Complete</p>
+        <div class="space-y-4">
+          <!-- Status Line -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <span class="inline-block text-[11px] font-mono px-2 py-0.5 rounded border ${statusBadge} mb-1.5">
+                ${statusTag}
+              </span>
+              <h3 class="text-lg font-semibold tracking-tight ${statusColor}">
+                ${d.prediction}
+              </h3>
+            </div>
+            <div class="text-left sm:text-right font-mono">
+              <span class="text-[10px] uppercase text-zinc-500 block">Confidence</span>
+              <span class="text-xl font-semibold ${statusColor}">${d.confidence}%</span>
+            </div>
           </div>
-        </div>
-        <!-- Confidence Bar -->
-        <div class="mb-4">
-          <div class="flex justify-between text-xs mb-1.5">
-            <span class="text-slate-400 font-medium">Confidence</span>
-            <span class="font-bold ${parasitized ? 'text-red-400' : 'text-emerald-400'}">${d.confidence} %</span>
+
+          <!-- Thin Precision Confidence Bar -->
+          <div class="w-full h-1.5 rounded-full bg-zinc-900 overflow-hidden">
+            <div class="bar-fill h-full rounded-full ${barColor}" style="width: 0%"></div>
           </div>
-          <div class="w-full h-3 rounded-full bg-slate-800 overflow-hidden">
-            <div class="conf-bar-inner h-full rounded-full ${barColor}" style="width: 0%"></div>
-          </div>
-        </div>
-        <!-- Meta Grid -->
-        <div class="grid grid-cols-2 gap-3 text-center">
-          <div class="rounded-lg bg-slate-800/60 py-2.5">
-            <p class="text-lg font-extrabold text-slate-200">${d.raw_sigmoid}</p>
-            <p class="text-[10px] uppercase tracking-widest text-slate-500">Sigmoid Score</p>
-          </div>
-          <div class="rounded-lg bg-slate-800/60 py-2.5">
-            <p class="text-lg font-extrabold text-slate-200">${d.inference_ms} ms</p>
-            <p class="text-[10px] uppercase tracking-widest text-slate-500">Latency</p>
+
+          <!-- Monospaced Clinical Telemetry Grid -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 font-mono text-xs">
+            <div class="border border-zinc-900 rounded p-3 bg-zinc-900/30">
+              <span class="text-[10px] uppercase text-zinc-500 block">Sigmoid Output</span>
+              <span class="text-zinc-200 font-medium">${d.raw_sigmoid}</span>
+            </div>
+            <div class="border border-zinc-900 rounded p-3 bg-zinc-900/30">
+              <span class="text-[10px] uppercase text-zinc-500 block">Threshold</span>
+              <span class="text-zinc-400 font-medium">0.5000</span>
+            </div>
+            <div class="border border-zinc-900 rounded p-3 bg-zinc-900/30">
+              <span class="text-[10px] uppercase text-zinc-500 block">Inference Latency</span>
+              <span class="text-zinc-200 font-medium">${d.inference_ms} ms</span>
+            </div>
+            <div class="border border-zinc-900 rounded p-3 bg-zinc-900/30">
+              <span class="text-[10px] uppercase text-zinc-500 block">Tensor Input</span>
+              <span class="text-zinc-400 font-medium">(1, 64, 64, 3)</span>
+            </div>
           </div>
         </div>
       `;
       resultCard.classList.remove('hidden');
 
-      // Animate confidence bar after repaint
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          resultCard.querySelector('.conf-bar-inner').style.width = d.confidence + '%';
+          resultCard.querySelector('.bar-fill').style.width = d.confidence + '%';
         });
       });
     }
 
     function showError(msg) {
-      resultCard.className = 'slide-up rounded-2xl border border-red-500/40 bg-red-500/[0.06] p-6 shadow-xl backdrop-blur';
       resultCard.innerHTML = `
-        <p class="text-red-400 font-bold">⚠ Error</p>
-        <p class="text-sm text-slate-300 mt-1">${msg}</p>
+        <div class="p-4 border border-rose-500/20 bg-rose-500/10 rounded-lg text-xs font-mono text-rose-300">
+          <p class="font-semibold text-rose-400">Diagnosis Error</p>
+          <p class="mt-1">${msg}</p>
+        </div>
       `;
       resultCard.classList.remove('hidden');
     }
